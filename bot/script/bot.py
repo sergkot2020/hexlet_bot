@@ -7,6 +7,7 @@ def another_func():
 
 def main():
     print('Hello world')
+    print(os.getcwd())
     print('bye')
 
 
