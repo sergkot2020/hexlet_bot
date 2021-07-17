@@ -7,9 +7,9 @@ from telethon import TelegramClient, events
 
 
 async def chat_handler(event):
-    # if event.user_joined:
-    print(f'user_joined: {event.user_joined}')
-    await event.reply('Welcome to the group!')
+    if event.user_joined:
+        print(f'user_joined: {event.user_joined}')
+        await event.reply('Welcome to the group!')
 
     chat = await event.get_chat()
     print(chat.stringify())
@@ -22,10 +22,13 @@ async def message_handler(event):
 
     chat_id = event.chat_id
     sender_id = event.sender_id
-    print(f'incoming message: {event.raw_text}')
+    text = event.raw_text
+    print(f'incoming message: {text}')
     print(f'chat_id: {chat_id}')
     print(f'sender_id: {sender_id}')
-    await event.reply('hi!')
+
+    if text == 'hello':
+        await event.reply('hi!')
 
 
 def run(
