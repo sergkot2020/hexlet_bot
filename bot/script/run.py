@@ -4,9 +4,11 @@ https://my.telegram.org/apps
 """
 from bot.reader import read_config
 from bot.bot import run
+import logging
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     config = read_config('config.yml')
     run(**config['bot'])
 
