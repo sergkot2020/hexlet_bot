@@ -1,13 +1,14 @@
 import asyncio
 
 import pytest
+import os
 from telethon import TelegramClient
 
-# Your API ID, hash and session string here
-api_id = 6708374
-api_hash = '123'
-bot_token = '123'
-session_str = 'test_bot'
+from bot.reader import read_config
+
+TEST_FOLDER = 'tests'
+CONFIG_FILENAME = 'test_config.yml'
+CONFIG = read_config(os.path.join(TEST_FOLDER, CONFIG_FILENAME))
 
 
 @pytest.fixture(scope="session")
@@ -21,15 +22,13 @@ def event_loop():
 @pytest.mark.asyncio
 async def bot_client(event_loop):
     bot = TelegramClient(
-        session_str,
-        api_id,
-        api_hash,
+        **CONFIG['bot'],
         sequential_updates=True,
         loop=event_loop,
     )
     # bot.start(bot_token=bot_token)
     # Connect to the server
-    await bot.connect()
+    await bot.start()
     # Issue a high level command to start receiving message
     # await bot.get_me()
     # # Fill the entity cache
