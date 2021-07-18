@@ -20,8 +20,12 @@ def run(
     bot.on(events.ChatAction)(chat_handler)
     bot.on(events.NewMessage)(message_handler)
     bot.start(bot_token=bot_token)
-    # chat = bot.loop.run_until_complete(bot.get_entity('https://t.me/joinchat/QSgtM8QuTcw4NjMy'))
+    send_message(bot, -1001422577723, 'test message')
     bot.run_until_disconnected()
+
+
+def send_message(client: TelegramClient, channel, message: str):
+    client.loop.run_until_complete(client.send_message(channel, message))
 
 
 async def chat_handler(event):
