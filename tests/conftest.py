@@ -5,8 +5,8 @@ from telethon import TelegramClient
 
 # Your API ID, hash and session string here
 api_id = 6708374
-api_hash = 'f821ec8136998d00bb3a6ca7f611db86'
-bot_token = '1690608766:AAGHY0cjcjw5mqpgfTB1zc8ZJbvDNyHVRyE'
+api_hash = '123'
+bot_token = '123'
 session_str = 'test_bot'
 
 
