@@ -39,7 +39,7 @@ async def chat_handler(event):
 
 
 async def message_handler(event):
-    chat = await event.get_chat()
+    # chat = await event.get_chat()
     # await bot.download_profile_photo(sender)
     chat_id = event.chat_id
     sender_id = event.sender_id
