@@ -6,6 +6,8 @@ import logging
 
 from telethon import TelegramClient, events
 
+from bot import DEV_CHANNEL_ID
+
 
 def run(
         *,
@@ -20,7 +22,10 @@ def run(
     bot.on(events.ChatAction)(chat_handler)
     bot.on(events.NewMessage)(message_handler)
     bot.start(bot_token=bot_token)
-    send_message(bot, -1001422577723, 'test message')
+    send_message(bot, DEV_CHANNEL_ID, 'But successfully started.')
+    for participant in bot.iter_participants(DEV_CHANNEL_ID):
+        logging.info(f'{participant.first_name:10}:\t{participant.id} '
+                     f'{"(bot)" if participant.bot else ""}')
     bot.run_until_disconnected()
 
 
