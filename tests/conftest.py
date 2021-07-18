@@ -1,14 +1,18 @@
 import asyncio
+import logging
+import os
 
 import pytest
-import os
 from telethon import TelegramClient
+from telethon.sessions import StringSession
 
 from bot.reader import read_config
 
 TEST_FOLDER = 'tests'
 CONFIG_FILENAME = 'test_config.yml'
 CONFIG = read_config(os.path.join(TEST_FOLDER, CONFIG_FILENAME))
+
+logging.basicConfig(level=logging.INFO)
 
 
 @pytest.fixture(scope="session")
@@ -21,14 +25,15 @@ def event_loop():
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
 async def bot_client(event_loop):
+    logging.info('>> Creating bot.')
     bot = TelegramClient(
-        **CONFIG['bot'],
-        sequential_updates=True,
+        None,
+        CONFIG['test_server']['api_id'],
+        CONFIG['test_server']['api_hash'],
         loop=event_loop,
     )
-    # bot.start(bot_token=bot_token)
-    # Connect to the server
-    await bot.start()
+    bot.session.set_dc(3, CONFIG['test_server']['test_sever_ip'], 443)
+    await bot.start(bot_token=CONFIG['test_server']['bot_token'])
     # Issue a high level command to start receiving message
     # await bot.get_me()
     # # Fill the entity cache
@@ -38,3 +43,20 @@ async def bot_client(event_loop):
 
     await bot.disconnect()
     await bot.disconnected
+
+
+@pytest.fixture(scope="session")
+@pytest.mark.asyncio
+async def test_server_client(event_loop):
+    logging.info('>> Creating client.')
+    client = TelegramClient(
+        StringSession(CONFIG['test_server']['session_string']),
+        CONFIG['test_server']['api_id'],
+        CONFIG['test_server']['api_hash'],
+        loop=event_loop,
+    )
+    client.session.set_dc(3, CONFIG['test_server']['test_sever_ip'], 443)
+    await client.start()
+    yield client
+    await client.disconnect()
+    await client.disconnected
