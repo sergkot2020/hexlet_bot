@@ -23,6 +23,7 @@ def read_config(filename: str, dirs: Set = READ_CONFIG_DIRS) -> Dict:
                 file_found_flag = True
                 break
     else:
+        file_found_flag = True
         file_full_path = filename
     if not file_found_flag:
         logging.error('Configuration file was not found')
