@@ -51,7 +51,7 @@ async def test_daily_check():
             bot=bot,
             report_day=today,
             chat_id=123,
-            sleep_time=1
+            sleep_time=1,
         )
     )
     await asyncio.sleep(3)

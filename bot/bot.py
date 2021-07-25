@@ -4,6 +4,7 @@ https://my.telegram.org/apps
 """
 import asyncio
 import logging
+from typing import Set
 
 from telethon import TelegramClient, events  # type: ignore
 from collections import defaultdict
@@ -22,7 +23,7 @@ WARNING_MSG = '{0}\nГоспода, вы пропустил наш еженед�
 
 
 daily_message = defaultdict(list)
-weekly_board = set()
+weekly_board: Set = set()
 
 
 def run(
