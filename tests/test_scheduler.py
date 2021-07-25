@@ -59,6 +59,7 @@ async def test_daily_check():
 
     chat_id, message = bot.sent_messages[0]
 
+    daily_check_task.cancel()
     assert chat_id == chat_id
     assert message == WARNING_MSG.format('@user1')
 
