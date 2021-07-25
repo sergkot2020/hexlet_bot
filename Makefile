@@ -2,6 +2,7 @@ run:
 	poetry run hexlet-bot
 
 lint:
+	poetry run mypy bot
 	poetry run flake8 bot
 
 install:
