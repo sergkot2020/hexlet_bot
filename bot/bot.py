@@ -5,7 +5,7 @@ https://my.telegram.org/apps
 import asyncio
 import logging
 
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events  # type: ignore
 from collections import defaultdict
 from bot import DEV_CHANNEL_ID
 from datetime import datetime
@@ -13,13 +13,12 @@ from datetime import datetime
 '''
 daily_message = {
     'sender_id': {
-        datetime_obj: '#daily text' 
+        datetime_obj: '#daily text'
     }
 }
-
 '''
 
-WARNING_MSG = '{0}\nГоспода, вы пропустил наш еженедельный чат-митинг'
+WARNING_MSG = '{0}\nГоспода, вы пропустил наш еженедельный чат-митинг 😞'
 
 
 daily_message = defaultdict(list)
@@ -41,7 +40,7 @@ def run(
     bot.on(events.ChatAction)(chat_handler)
     bot.on(events.NewMessage)(message_handler)
     bot.start(bot_token=bot_token)
-    bot.loop.create_task(bot.send_message(DEV_CHANNEL_ID, 'But successfully started.'))
+    bot.loop.create_task(bot.send_message(DEV_CHANNEL_ID, 'Bot successfully started.'))
     bot.loop.create_task(check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time))
 
     for participant in bot.iter_participants(DEV_CHANNEL_ID):
@@ -65,7 +64,12 @@ async def chat_handler(event):
     # await event.reply('hi!')
 
 
-async def check_daily_report(bot, report_day, chat_id, sleep_time):
+async def check_daily_report(
+        bot: TelegramClient,
+        report_day: int,
+        chat_id: int,
+        sleep_time: int,
+        ):
     report_was_send = False
     while True:
         day = datetime.now().weekday()
@@ -73,7 +77,7 @@ async def check_daily_report(bot, report_day, chat_id, sleep_time):
             if not report_was_send:
                 criminals = []
                 async for participant in bot.iter_participants(chat_id):
-                    if participant.id not in weekly_board and not participant.bot:
+                    if participant.id not in weekly_board and not participant.bot:  # noqa: E501
                         criminals.append(f'@{participant.username}')
 
                 members = ', '.join(criminals)

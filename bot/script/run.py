@@ -3,7 +3,6 @@ https://docs.telethon.dev/en/latest/basic/quick-start.html
 https://my.telegram.org/apps
 """
 import logging
-from datetime import datetime
 
 from bot.auth_secrets import BOT_AUTH
 from bot import ConfigHandler
