@@ -13,7 +13,7 @@ import datetime
 
 from pytest import mark
 from bot.bot import message_handler, check_daily_report, WARNING_MSG
-from utils import Event, Bot, Participant, Message
+from monkey_patches import Event, Bot, Participant, Message
 from datetime import datetime
 
 
