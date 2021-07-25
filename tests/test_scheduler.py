@@ -67,10 +67,12 @@ async def test_daily_check():
     chat_id, message = bot.sent_messages[0]
 
     daily_check_task.cancel()
+
+    # start again but time has not come yet
     daily_check_task = asyncio.create_task(
         check_daily_report(
             bot=bot,
-            report_day=today + 1,
+            report_day=today + 1,  # <- that's the key difference
             chat_id=123,
             sleep_time=1,
             )
