@@ -81,14 +81,15 @@ async def check_daily_report(
                 async for participant in bot.iter_participants(chat_id):
                     if participant.id not in weekly_board and not participant.bot:  # noqa: E501
                         criminals.append(f'@{participant.username}')
-
-                members = ', '.join(criminals)
-                message = WARNING_MSG.format(members)
-                await bot.send_message(chat_id, message)
-
+                if criminals:
+                    members = ', '.join(criminals)
+                    message = WARNING_MSG.format(members)
+                    await bot.send_message(chat_id, message)
+                else:
+                    await bot.send_message(chat_id, 'Good job, guys!')
                 report_was_send = True
-                weekly_board.clear()
                 logging.info('Daily report was sent. New cycle started.')
+                weekly_board.clear()
             else:
                 logging.info('Daily report was not sent as it has been sent already today.')
         else:
