@@ -72,6 +72,7 @@ async def check_daily_report(
         ):
     report_was_send = False
     while True:
+        logging.info('Check for daily report started.')
         day = datetime.now().weekday()
         if day == report_day:
             if not report_was_send:
@@ -86,7 +87,11 @@ async def check_daily_report(
 
                 report_was_send = True
                 weekly_board.clear()
+                logging.info('Daily report was sent. New cycle started.')
+            else:
+                logging.info('Daily report was not sent as it has been sent already today.')
         else:
+            logging.info(f'Daily report was not sent as today is {datetime.today().weekday()} vs specified {report_day}.')
             report_was_send = False
 
         await asyncio.sleep(sleep_time)
