@@ -46,7 +46,7 @@ async def test_daily_check():
     today = datetime.now().weekday()
     await message_handler(event1)
     await message_handler(event2)
-    asyncio.create_task(
+    daily_check_task = asyncio.create_task(
         check_daily_report(
             bot=bot,
             report_day=today,
