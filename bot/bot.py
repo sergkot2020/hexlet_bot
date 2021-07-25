@@ -21,7 +21,7 @@ daily_message = {
 
 WARNING_MSG = '{0}\nГоспода, вы пропустил наш еженедельный чат-митинг 😞'
 
-
+# TODO: avoid use of globals, not sure where to place them to have differentiation per chat
 daily_message = defaultdict(list)
 weekly_board: Set = set()
 
@@ -99,7 +99,7 @@ async def check_daily_report(
         await asyncio.sleep(sleep_time)
 
 
-async def message_handler(event):
+async def message_handler(event: events.NewMessage):
     # chat = await event.get_chat()
     # await bot.download_profile_photo(sender)
     chat_id = event.chat_id
