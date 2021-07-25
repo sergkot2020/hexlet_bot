@@ -43,10 +43,10 @@ def run(
     bot.on(events.ChatAction)(chat_handler)
     bot.on(events.NewMessage)(message_handler)
     bot.start(bot_token=bot_token)
-    bot.loop.create_task(
+    bot.loop.run_until_complete(
         bot.send_message(DEV_CHANNEL_ID, 'Bot successfully started.')
         )
-    bot.loop.create_task(
+    bot.loop.run_until_complete(
         check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time)
         )
 
