@@ -1,3 +1,6 @@
+# Secrtes
+bot/auth_secrets.py
+
 # Bot sessions
 *.session
 *.session-journal

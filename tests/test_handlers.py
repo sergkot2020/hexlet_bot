@@ -7,7 +7,7 @@ from telethon.tl.custom.message import Message
 
 from bot import DEV_CHANNEL_ID
 from bot.bot import message_handler
-from utils import Event, Message as Msg
+from monkey_patches import Event, Message as Msg
 
 
 # @mark.asyncio

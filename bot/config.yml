@@ -1,6 +1,3 @@
-bot:
-  session: 'hexlet_bot'
-  api_id: 123
-  api_hash: '123'
-  bot_token: '123'
-
+bot_config:
+  report_day: 6
+  sleep_time: 86400

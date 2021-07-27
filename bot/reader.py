@@ -5,14 +5,14 @@ __all__ = [
 
 import logging
 import os
-from typing import Set, Dict
+from typing import Tuple, Dict
 
 import yaml
 
 READ_CONFIG_DIRS = ('.', './', '../', 'bot')
 
 
-def read_config(filename: str, dirs: Set = READ_CONFIG_DIRS) -> Dict:
+def read_config(filename: str, dirs: Tuple = READ_CONFIG_DIRS) -> Dict:
     file_full_path: str
     file_found_flag = False
     if os.path.dirname(filename) == '':

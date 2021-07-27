@@ -10,7 +10,7 @@ from bot.reader import read_config
 
 TEST_FOLDER = 'tests'
 CONFIG_FILENAME = 'test_config.yml'
-CONFIG = read_config(os.path.join(TEST_FOLDER, CONFIG_FILENAME))
+# CONFIG = read_config(os.path.join(TEST_FOLDER, CONFIG_FILENAME))
 
 logging.basicConfig(level=logging.INFO)
 
