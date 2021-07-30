@@ -27,10 +27,18 @@ class Event:
 
 
 class Participant:
-    def __init__(self, id: int, bot: bool, username: str):
+    def __init__(self,
+                 id: int,
+                 bot: bool,
+                 username: str = None,
+                 first_name: str = None,
+                 last_name: str = None,
+                 ):
         self.id = id
         self.bot = bot
         self.username = username
+        self.first_name = first_name
+        self.last_name = last_name
 
 
 class Bot:

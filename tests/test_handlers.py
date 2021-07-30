@@ -6,8 +6,9 @@ from telethon import TelegramClient, events
 from telethon.tl.custom.message import Message
 
 from bot import DEV_CHANNEL_ID
-from bot.bot import message_handler
+from bot.bot import message_handler, get_name
 from monkey_patches import Event, Message as Msg
+from monkey_patches import Participant
 
 
 # @mark.asyncio
@@ -29,3 +30,18 @@ async def test_help_mock():
     )
     await message_handler(event)
     assert event.reply_was_call_with_arg == 'Hi!'
+
+
+@mark.parametrize("first, last, user, expected", [
+    ('Vova', 'X', 'Vovochka', 'Vovochka'),
+    ('Masha', 'Y', None, 'Masha'),
+])
+def test_get_name(first, last, user, expected):
+    user = Participant(
+        id=1,
+        bot=1,
+        first_name=first,
+        last_name=last,
+        username=user,
+        )
+    assert get_name(user) == expected

@@ -86,7 +86,7 @@ async def check_daily_report(
                 criminals = []
                 async for participant in bot.iter_participants(chat_id):
                     if participant.id not in weekly_board and not participant.bot:  # noqa: E501
-                        criminals.append(f'@{participant.username}')
+                        criminals.append(f'@{get_name(participant)}')
                 if criminals:
                     members = ', '.join(criminals)
                     message = WARNING_MSG.format(members)
@@ -126,3 +126,7 @@ async def message_handler(event: events.NewMessage):
             (date, text)
             )
         weekly_board.add(sender_id)
+
+
+def get_name(participant) -> str:
+    return
