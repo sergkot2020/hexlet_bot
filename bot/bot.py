@@ -36,7 +36,7 @@ def run(
         bot_token: str,
         report_day: int,
         sleep_time: int,
-        ):
+):
     # with bot:
     #     bot.loop.run_until_complete(main())
     bot = TelegramClient(session, api_id, api_hash)
@@ -45,10 +45,10 @@ def run(
     bot.start(bot_token=bot_token)
     bot.loop.run_until_complete(
         bot.send_message(DEV_CHANNEL_ID, 'Bot successfully started.')
-        )
+    )
     bot.loop.run_until_complete(
         check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time)
-        )
+    )
 
     for participant in bot.iter_participants(DEV_CHANNEL_ID):
         logging.info(f'{participant.first_name:10}:\t{participant.id} '
@@ -76,7 +76,7 @@ async def check_daily_report(
         report_day: int,
         chat_id: int,
         sleep_time: int,
-        ):
+):
     report_was_send = False
     while True:
         logging.info('Check for daily report started.')
@@ -103,7 +103,7 @@ async def check_daily_report(
             logging.info(
                 f'Daily report was not sent as today is {datetime.today().weekday()}'  # noqa: E501
                 f' vs specified {report_day}.'
-                )
+            )
             report_was_send = False
 
         await asyncio.sleep(sleep_time)
@@ -119,10 +119,11 @@ async def message_handler(event: events.NewMessage):
     logging.info(f'incoming message: {text}')
     logging.info(f'chat_id: {chat_id}')
     logging.info(f'sender_id: {sender_id}')
+    # TODO ignore private message with daily tag
     if text.lower() == 'hello':
         await event.reply('Hi!')
     elif '#daily' in text:
         daily_message[sender_id].append(
             (date, text)
-            )
+        )
         weekly_board.add(sender_id)

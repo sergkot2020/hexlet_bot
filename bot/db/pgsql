@@ -1,0 +1,26 @@
+create table if not exists telegram_user
+(
+    id          serial  not null
+        constraint telegram_user_pk
+            primary key,
+    telegram_id bigint  not null,
+    is_bot      boolean not null,
+    first_name  varchar,
+    last_name   varchar,
+    lang_code   varchar,
+    phone       varchar,
+    username    varchar,
+    create_ts   timestamp with time zone default now()
+);
+
+create table if not exists telegram_chat
+(
+    id          serial                                 not null
+        constraint telegram_chat_pk
+            primary key,
+    telegram_id bigint                                 not null,
+    gigagroup   boolean                  default false not null,
+    megagroup   boolean                  default true  not null,
+    create_ts   timestamp with time zone default now()
+);
+

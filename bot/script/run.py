@@ -11,7 +11,12 @@ from bot.reader import read_config
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        # filename='/var/log/bot/bot.log',
+        filemode='a',
+        # format='{asctime} [{process}] {levelname:5} {name}: {message}'
+    )
     config = read_config('config.yml')
     bot_config = ConfigHandler(**config['bot_config'])
     run(
@@ -21,7 +26,7 @@ def main():
         bot_token=BOT_AUTH.bot_token,
         report_day=bot_config.report_day,
         sleep_time=bot_config.sleep_time,
-        )
+    )
 
 
 if __name__ == '__main__':

@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  db:
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - ./bot/db/pgsql:/docker-entrypoint-initdb.d/dump.sql
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=bot
+      - POSTGRES_PASSWORD=123bot
+      - POSTGRES_DB=bot
+      - POSTGRES_INITDB_ARGS="-E utf8"
+    shm_size: 8192MB
+    security_opt:
+      - seccomp:unconfined
