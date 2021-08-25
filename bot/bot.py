@@ -12,13 +12,8 @@ from telethon import TelegramClient, events  # type: ignore
 
 from bot import DEV_CHANNEL_ID
 
-'''
-daily_message = {
-    'sender_id': {
-        datetime_obj: '#daily text'
-    }
-}
-'''
+logger = logging.getLogger(__name__)
+
 
 WARNING_MSG = '{0}\nГоспода, вы пропустил наш еженедельный чат-митинг 😞'
 
@@ -36,18 +31,22 @@ def run(
         bot_token: str,
         report_day: int,
         sleep_time: int,
+        db: Db,
 ):
     # with bot:
     #     bot.loop.run_until_complete(main())
     bot = TelegramClient(session, api_id, api_hash)
-    bot.on(events.ChatAction)(chat_handler)
-    bot.on(events.NewMessage)(message_handler)
+    bot.on(events.ChatAction)(chat_handler(db=db))
+    bot.on(events.NewMessage)(message_handler(db=db))
     bot.start(bot_token=bot_token)
-    bot.loop.run_until_complete(
+    bot.loop.create_task(
         bot.send_message(DEV_CHANNEL_ID, 'Bot successfully started.')
     )
-    bot.loop.run_until_complete(
-        check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time)
+    bot.loop.create_task(
+        check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time, db)
+    )
+    bot.loop.create_task(
+        db.create_conn_pool()
     )
 
     for participant in bot.iter_participants(DEV_CHANNEL_ID):
@@ -57,18 +56,15 @@ def run(
     bot.run_until_disconnected()
 
 
-def send_message(client: TelegramClient, channel, message: str):
-    client.loop.run_until_complete(client.send_message(channel, message))
+def chat_handler(db: Db):
+    async def coro(event):
+        if event.user_joined:
+            logging.info(f'user_joined: {event.user_joined}')
+            await event.reply('Welcome to the group!')
 
-
-async def chat_handler(event):
-    if event.user_joined:
-        logging.info(f'user_joined: {event.user_joined}')
-        await event.reply('Welcome to the group!')
-
-    chat = await event.get_chat()
-    print(chat.stringify())
-    # await event.reply('hi!')
+        chat = await event.get_chat()
+        logger.info(chat.stringify())
+    return coro
 
 
 async def check_daily_report(
@@ -76,6 +72,7 @@ async def check_daily_report(
         report_day: int,
         chat_id: int,
         sleep_time: int,
+        db: Db
 ):
     report_was_send = False
     while True:
@@ -87,6 +84,7 @@ async def check_daily_report(
                 async for participant in bot.iter_participants(chat_id):
                     if participant.id not in weekly_board and not participant.bot:  # noqa: E501
                         criminals.append(f'@{participant.username}')
+
                 if criminals:
                     members = ', '.join(criminals)
                     message = WARNING_MSG.format(members)
@@ -100,7 +98,7 @@ async def check_daily_report(
                 logging.info('Daily report was not sent as '
                              'it has been sent already today.')
         else:
-            logging.info(
+            logger.info(
                 f'Daily report was not sent as today is {datetime.today().weekday()}'  # noqa: E501
                 f' vs specified {report_day}.'
             )
@@ -109,21 +107,19 @@ async def check_daily_report(
         await asyncio.sleep(sleep_time)
 
 
-async def message_handler(event: events.NewMessage):
-    # chat = await event.get_chat()
-    # await bot.download_profile_photo(sender)
-    chat_id = event.chat_id
-    sender_id = event.sender_id
-    date = event.message.date
-    text = event.raw_text
-    logging.info(f'incoming message: {text}')
-    logging.info(f'chat_id: {chat_id}')
-    logging.info(f'sender_id: {sender_id}')
-    # TODO ignore private message with daily tag
-    if text.lower() == 'hello':
-        await event.reply('Hi!')
-    elif '#daily' in text:
-        daily_message[sender_id].append(
-            (date, text)
-        )
-        weekly_board.add(sender_id)
+def message_handler(db: Db):
+    async def coro(event: events.NewMessage):
+        chat_id = event.chat_id
+        sender_id = event.sender_id
+        date = event.message.date
+        text = event.raw_text
+        logging.info(f'Event NewMessage: message={text}, chat_id={chat_id}, sender_id={sender_id}')
+        # TODO ignore private message with daily tag
+        if text.lower() == 'hello':
+            await event.reply('Hi!')
+        elif '#daily' in text:
+            daily_message[sender_id].append(
+                (date, text)
+            )
+            weekly_board.add(sender_id)
+    return coro

@@ -1,26 +1,22 @@
+import asyncpg
+import logging
 
-'''
-telegram_user:
-    id serial
-    telegram_id  bigint
-    bot  bool
-    first_name varchar
-    last_name  varchar
-    lang_code  varchar
-    phone      varchar
-    username   varchar
-    create_ts timestamptz
+logger = logging.getLogger(__name__)
 
-telegram_chat:
-    id serial
-    chat_id bigint
-    gigagroup bool
-    megagroup bool
-    create_ts timestamptz
 
-report:
-    chat_id foreign key(chat_id)
-    message text
-    telegram_user_id foreign key(telegram_user)
-    create_ts timestamptz
-'''
+class Db:
+    def __init__(self, **kwargs):
+        self.params = kwargs
+        self.pool = None
+
+    async def create_conn_pool(self, *, min_size=0, max_size=10):
+        self.pool = await asyncpg.create_pool(
+            host=self.params.get('host'),
+            port=self.params.get('port'),
+            database=self.params.get('database'),
+            user=self.params.get('user'),
+            password=self.params.get('password'),
+            min_size=min_size,
+            max_size=max_size,
+        )
+        logger.info('Database connected')

@@ -2,22 +2,18 @@
 https://docs.telethon.dev/en/latest/basic/quick-start.html
 https://my.telegram.org/apps
 """
-import logging
-
 from bot.auth_secrets import BOT_AUTH
 from bot import ConfigHandler
 from bot.bot import run
 from bot.reader import read_config
+from logger import set_logging
+from db.db import Db
 
 
 def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        # filename='/var/log/bot/bot.log',
-        filemode='a',
-        # format='{asctime} [{process}] {levelname:5} {name}: {message}'
-    )
     config = read_config('config.yml')
+    set_logging(**config.pop('logging'))
+    db = Db(**config['db'])
     bot_config = ConfigHandler(**config['bot_config'])
     run(
         session=BOT_AUTH.session,
@@ -26,6 +22,7 @@ def main():
         bot_token=BOT_AUTH.bot_token,
         report_day=bot_config.report_day,
         sleep_time=bot_config.sleep_time,
+        db=db
     )
 
 
