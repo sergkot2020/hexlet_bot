@@ -7,7 +7,7 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 from typing import Set
-
+from db.db import Db
 from telethon import TelegramClient, events  # type: ignore
 
 from bot import DEV_CHANNEL_ID
@@ -33,27 +33,36 @@ def run(
         sleep_time: int,
         db: Db,
 ):
-    # with bot:
-    #     bot.loop.run_until_complete(main())
     bot = TelegramClient(session, api_id, api_hash)
     bot.on(events.ChatAction)(chat_handler(db=db))
     bot.on(events.NewMessage)(message_handler(db=db))
     bot.start(bot_token=bot_token)
+    bot.loop.create_task(
+        db.create_conn_pool()
+    )
     bot.loop.create_task(
         bot.send_message(DEV_CHANNEL_ID, 'Bot successfully started.')
     )
     bot.loop.create_task(
         check_daily_report(bot, report_day, DEV_CHANNEL_ID, sleep_time, db)
     )
-    bot.loop.create_task(
-        db.create_conn_pool()
-    )
 
     for participant in bot.iter_participants(DEV_CHANNEL_ID):
-        logging.info(f'{participant.first_name:10}:\t{participant.id} '
-                     f'{"(bot)" if participant.bot else ""}')
+        logger.info(
+            f'{participant.first_name:10}:\t{participant.id} '
+            f'{"(bot)" if participant.bot else ""}'
+        )
 
     bot.run_until_disconnected()
+
+
+async def create_task(coro):
+    try:
+        return await coro
+    except asyncio.CancelledError:
+        raise
+    except:
+        logger.exception(f'Error in {coro}')
 
 
 def chat_handler(db: Db):
@@ -111,9 +120,27 @@ def message_handler(db: Db):
     async def coro(event: events.NewMessage):
         chat_id = event.chat_id
         sender_id = event.sender_id
+        user = event.message.sender
         date = event.message.date
         text = event.raw_text
+
         logging.info(f'Event NewMessage: message={text}, chat_id={chat_id}, sender_id={sender_id}')
+
+        await db.add_chat_if_not_exist(
+            chat_id=chat_id,
+            gigagroup=event.chat.gigagroup,
+            megagroup=event.chat.megagroup,
+        )
+        await db.add_user_if_not_exist(
+            telegram_id=sender_id,
+            is_bot=user.bot,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            lang_code=user.lang_code,
+            phone=user.phone,
+            username=user.username,
+        )
+
         # TODO ignore private message with daily tag
         if text.lower() == 'hello':
             await event.reply('Hi!')
