@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexlet_bot"
-version = "0.1.0"
+version = "0.1.2"
 description = "Telegram bot to test our skills with building one."
 authors = ["Hexlet Group 2021"]
 packages = [
@@ -9,8 +9,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+uvloop = "^0.16.0"
 Telethon = "^1.22.0"
 PyYAML = "^5.4.1"
+asyncpg = "^0.24.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
@@ -23,4 +25,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-hexlet-bot = "bot.script.run:main"
+hexlet-bot = "bot.scripts.runner:main"
