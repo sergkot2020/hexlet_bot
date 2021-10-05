@@ -1,0 +1,23 @@
+
+api_id: 123456
+api_hash: api_hash_string
+bot_token: 123456:bot_token_string
+session: some_session_string
+
+sleep_time: 0
+
+db_pool_size: 5
+
+db:
+  user: bot
+  db_name: bot
+  password: secret
+  host: localhost
+
+
+logging:
+#  filename: /var/log/hexlet/bot.log
+  format: "{asctime} {levelname:5} {name}: {message}"
+  level: INFO
+  loggers:
+    bot: DEBUG

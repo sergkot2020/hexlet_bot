@@ -1,18 +1,36 @@
 import asyncio
 import logging
-import os
-
+import subprocess
+import time
 import pytest
-from telethon import TelegramClient, events
-from telethon.sessions import StringSession
-
-from bot.reader import read_config
+from bot.scripts.runner import run_app
+from bot.app import App
+import os
+from tests.monkey_patches import Bot
 
 TEST_FOLDER = 'tests'
 CONFIG_FILENAME = 'test_config.yml'
-# CONFIG = read_config(os.path.join(TEST_FOLDER, CONFIG_FILENAME))
+ROOT_DIR = os.getcwd()
+CONFIG_PATH = os.path.join(ROOT_DIR, TEST_FOLDER, CONFIG_FILENAME)
 
 logging.basicConfig(level=logging.INFO)
+
+
+@pytest.fixture(scope="session")
+def create_db():
+    subprocess.run(
+        f'docker-compose up -d db',
+        stdout=subprocess.PIPE,
+        shell=True
+    )
+    time.sleep(5)
+    yield
+    result = subprocess.run(
+        f'docker-compose down -v',
+        stdout=subprocess.PIPE,
+        shell=True
+    )
+    return result
 
 
 @pytest.fixture(scope="session")
@@ -22,45 +40,50 @@ def event_loop():
     loop.close()
 
 
-# @pytest.fixture(scope="session")
-# @pytest.mark.asyncio
-# async def bot_client(event_loop):
-#     logging.info('>> Creating bot.')
-#     bot = TelegramClient(
-#         None,
-#         CONFIG['test_server']['api_id'],
-#         CONFIG['test_server']['api_hash'],
-#         loop=event_loop,
-#     )
-#     bot.session.set_dc(2, CONFIG['test_server']['test_sever_ip'], 443)
-#     await bot.start(bot_token=CONFIG['test_server']['bot_token'])
-#     # Issue a high level command to start receiving message
-#     # await bot.get_me()
-#     # # Fill the entity cache
-#     # await bot.get_dialogs()
-#
-#     yield bot
-#
-#     await bot.disconnect()
-#     await bot.disconnected
-#
-#
-# @pytest.fixture(scope="session")
-# @pytest.mark.asyncio
-# async def test_server_client(event_loop):
-#     logging.info('>> Creating client.')
-#     client = TelegramClient(
-#         StringSession(CONFIG['test_server']['session_string']),
-#         CONFIG['test_server']['api_id'],
-#         CONFIG['test_server']['api_hash'],
-#         loop=event_loop,
-#     )
-#     client.session.set_dc(2, CONFIG['test_server']['test_sever_ip'], 443)
-#     await client.start()
-#     yield client
-#     await client.disconnect()
-#     await client.disconnected
+@pytest.fixture(scope="session")
+def created_app(create_db, event_loop):
+    event_loop = asyncio.get_event_loop()
+    event_loop.create_task(
+        run_app(
+            CONFIG_PATH,
+            client=Bot,
+        )
+    )
 
 
+@pytest.fixture(scope="session")
+async def app(created_app):
+    await asyncio.sleep(1)
+    app = App._instance
+    yield app
+    app.stop()
+    await app.wait_stopped()
 
-
+# def after_scenario(context, scenario):
+#     conf: dict = context.ds_config
+#     dump_path = os.path.join(ROOT_DIR, 'features', 'fixtures', 'dump.sql')
+#     for name, settings in conf.items():
+#
+#         user = settings['user']
+#         db = settings['database']
+#         password = settings['password']
+#         schema = settings['schema']
+#
+#         fnull = open(os.devnull, 'w')
+#         subprocess.run(
+#             f'docker-compose exec -T db psql -U {user} -d {db} --command "DROP SCHEMA {schema} CASCADE"',
+#             shell=True,
+#             stdout=fnull,
+#             stderr=subprocess.STDOUT,
+#             env={'PGPASSWORD': password},
+#         )
+#
+#         subprocess.run(
+#             f"docker-compose exec -T db psql -U {user} -d {db} < {dump_path}",
+#             stdout=fnull,
+#             stderr=subprocess.STDOUT,
+#             shell=True,
+#             env={'PGPASSWORD': password},
+#         )
+#         fnull.close()
+#         return

@@ -1,86 +1,34 @@
-'''
-Дано:
-- сейчас Понедельник
-- В боте зарегано 2 пользователя
-- Один пользователь отправляет сообщение с тегом #daily
-Когда:
-- наступает вторник
-Тогда:
-- Бот присылает предупреждение тому пользователю который не написал сообщение с #daily
-'''
 import asyncio
-import datetime
 from datetime import datetime
-
+from bot.const import DAY_MAP
 from pytest import mark
+from datetime import datetime
+from bot.app import App, WELCOME_MSG
+from monkey_patches import Event, Message as Msg, BOT_ID, Chat, User, Bot
 
-from bot.bot import message_handler, check_daily_report, WARNING_MSG
-from monkey_patches import Event, Bot, Participant, Message
+CHAT_ID = 111222
+NEW_CHAT_USER_ID = 999888
+CHAT_TITLE = 'test chat'
 
 
 @mark.asyncio
-async def test_daily_check():
-    message_without_daily = Event(
-        message=Message(datetime.now(), 'some text'),
-        chat_id=123,
-        sender_id=1,
-        )
-    message_with_daily = Event(
-        message=Message(datetime.now(), '#daily ...'),
-        chat_id=123,
-        sender_id=2,
-        )
-    message_with_daily_but_different_chat = Event(
-        message=Message(datetime.now(), '#daily ...'),
-        chat_id=456,
-        sender_id=1,
-        )
-    bad_chat_member = Participant(
-        id=1,
-        bot=False,
-        username='bad_chat_member'
-        )
-    good_chat_member = Participant(
-        id=2,
-        bot=False,
-        username='good_chat_member'
-        )
-    bot = Bot(
-        chat_id=123,
-        participants=[bad_chat_member, good_chat_member]
-        )
-    today = datetime.now().weekday()
-    await message_handler(message_without_daily)
-    await message_handler(message_with_daily)
-    await message_handler(message_with_daily_but_different_chat)
-    daily_check_task = asyncio.create_task(
-        check_daily_report(
-            bot=bot,
-            report_day=today,
-            chat_id=123,
-            sleep_time=1,
-            )
-        )
-    await asyncio.sleep(0)
-    assert len(bot.sent_messages) == 1
+async def test_notice(app):
+    # await asyncio.sleep(1)
+    now = datetime.now()
+    day = DAY_MAP[now.weekday()]
+    chat_id = list(app.chats)[0]
+
+    kwargs = {day: True}
+
+    id_ = await app.db.get_chat_id(chat_id)
+
+    bot: Bot = app.bot
+    await app.db.update_chat_settings(id_, **kwargs)
+    await asyncio.sleep(1)
 
     chat_id, message = bot.sent_messages[0]
-
-    daily_check_task.cancel()
-
-    # start again but time has not come yet
-    daily_check_task = asyncio.create_task(
-        check_daily_report(
-            bot=bot,
-            report_day=today + 1,  # <- that's the key difference
-            chat_id=123,
-            sleep_time=1,
-            )
-        )
-    await asyncio.sleep(0)
-    daily_check_task.cancel()
     assert chat_id == chat_id
-    assert message == WARNING_MSG.format('@bad_chat_member')
-
-    # TODO: test for reset in one week (needs datetime patching)
-    # TODO: test for all submitted
+    assert message == 'Hi everyone, time to daily meeting 💪'
+#
+#     # TODO: test for reset in one week (needs datetime patching)
+#     # TODO: test for all submitted

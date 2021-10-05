@@ -1,31 +1,62 @@
-import asyncio
-import logging
 from datetime import datetime
+
 from pytest import mark
-from telethon import TelegramClient, events
-from telethon.tl.custom.message import Message
 
-from bot import DEV_CHANNEL_ID
-from bot.bot import message_handler
-from monkey_patches import Event, Message as Msg
+from bot.app import App, WELCOME_MSG
+from monkey_patches import Event, Message as Msg, BOT_ID, Chat, User, Bot
 
-
-# @mark.asyncio
-# async def test_help(bot_client: TelegramClient, test_server_client: TelegramClient):
-#     bot_client.on(events.NewMessage)(message_handler)
-#     bot_data = await bot_client.get_me()
-#     async with test_server_client.conversation(bot_data.username) as conv:
-#         await conv.send_message('hello')
-#         resp: Message = await conv.get_response()
-#         assert 'Hi!' == resp.raw_text
+CHAT_ID = 111222
+NEW_CHAT_USER_ID = 999888
+CHAT_TITLE = 'test chat'
 
 
 @mark.asyncio
-async def test_help_mock():
+async def test_add_to_chat(app: App):
+    bot: Bot = app.bot
+    users = [
+        User(
+            id=100 + i,
+            bot=False,
+            username=f'test_user_{i}',
+        )
+        for i in range(5)
+    ]
     event = Event(
-        message=Msg(datetime.now(), 'Hello'),
-        chat_id=12345,
-        sender_id=12345,
+        message=Msg(datetime.now(), ''),
+        chat_id=CHAT_ID,
+        sender_id=BOT_ID,
+        chat=Chat(CHAT_ID, CHAT_TITLE),
+        user=User(
+            id=BOT_ID,
+            bot=True,
+            username='test_bot'
+        )
     )
-    await message_handler(event)
-    assert event.reply_was_call_with_arg == 'Hi!'
+    event.user_joined = True
+    bot.set_participants(CHAT_ID, users)
+
+    await app.add_to_chat(event)
+
+    assert CHAT_ID in app.chats
+    assert set([u.id for u in users]) == app.users
+
+
+@mark.asyncio
+async def test_greet(app: App):
+    event = Event(
+        message=Msg(datetime.now(), ''),
+        chat_id=CHAT_ID,
+        sender_id=NEW_CHAT_USER_ID,
+        chat=Chat(CHAT_ID, CHAT_TITLE),
+        user=User(
+            id=NEW_CHAT_USER_ID,
+            bot=False,
+            username='new user',
+        )
+    )
+    event.user_joined = True
+
+    await app.greet(event)
+
+    assert NEW_CHAT_USER_ID in app.users
+    assert event.reply_was_call_with_arg == WELCOME_MSG

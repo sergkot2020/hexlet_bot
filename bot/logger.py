@@ -1,7 +1,8 @@
 __all__ = [
 	'VERBOSE',
 	'set_logging',
-	'signame'
+	'signame',
+	'reopen_logs'
 ]
 
 import logging
@@ -66,6 +67,12 @@ def set_logging(
 	}
 
 	logging.config.dictConfig(config)
+
+
+def reopen_logs():
+	for handler in logging.root.handlers:
+		if isinstance(handler, logging.handlers.WatchedFileHandler):
+			handler.reopenIfNeeded()
 
 
 def signame(signum):
