@@ -15,10 +15,8 @@ class ConfigHandler:
         # use
         start_bot(name=bot_config.name, key=bot_config.key)
         or
-        start_bot(**bot_config.all())
+        start_bot(**bot_config.all)
     """
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-
-    def all(self):
-        return self.__dict__
+        self.all = self.__dict__
