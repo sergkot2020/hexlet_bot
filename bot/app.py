@@ -68,10 +68,10 @@ class App:
 
     async def run(self):
         for handler in self.chat_handlers:
-            self.bot.on(self.events.ChatAction)(self._create_task(handler))
+            self.bot.on(self.events.ChatAction)(handler)
 
         for handler in self.message_handlers:
-            self.bot.on(self.events.NewMessage)(self._create_task(handler))
+            self.bot.on(self.events.NewMessage)(handler)
 
         await self.db.create_conn_pool(max_size=self.db_pool_size)
         await self.bot.start(bot_token=self.bot_token)
