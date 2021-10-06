@@ -11,7 +11,7 @@ install:
 	poetry install
 
 test:
-	poetry run pytest -vv
+	poetry run coverage run -m pytest -v
 
 coverage:
 	poetry run coverage xml
