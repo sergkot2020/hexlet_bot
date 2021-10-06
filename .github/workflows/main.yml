@@ -34,9 +34,6 @@ jobs:
     - name:  Install package
       run: |
         make install
-    - name:  Test run
-      run: |
-        make test
     - name:  Coverage report
       uses: paambaati/codeclimate-action@v2.7.5
       env:
