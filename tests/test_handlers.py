@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 
 from pytest import mark
@@ -21,16 +22,17 @@ async def test_add_to_chat(app: App):
         )
         for i in range(5)
     ]
+    b = User(
+        id=BOT_ID,
+        bot=True,
+        username='test_bot'
+    )
     event = Event(
-        message=Msg(datetime.now(), ''),
+        message=Msg(datetime.now(), '', sender=b),
         chat_id=CHAT_ID,
         sender_id=BOT_ID,
         chat=Chat(CHAT_ID, CHAT_TITLE),
-        user=User(
-            id=BOT_ID,
-            bot=True,
-            username='test_bot'
-        )
+        user=b
     )
     event.user_joined = True
     bot.set_participants(CHAT_ID, users)
@@ -43,16 +45,17 @@ async def test_add_to_chat(app: App):
 
 @mark.asyncio
 async def test_greet(app: App):
+    u = User(
+        id=NEW_CHAT_USER_ID,
+        bot=False,
+        username='new user',
+    )
     event = Event(
-        message=Msg(datetime.now(), ''),
+        message=Msg(datetime.now(), '', u),
         chat_id=CHAT_ID,
         sender_id=NEW_CHAT_USER_ID,
         chat=Chat(CHAT_ID, CHAT_TITLE),
-        user=User(
-            id=NEW_CHAT_USER_ID,
-            bot=False,
-            username='new user',
-        )
+        user=u
     )
     event.user_joined = True
 

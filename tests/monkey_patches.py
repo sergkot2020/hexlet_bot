@@ -4,12 +4,6 @@ from typing import List
 BOT_ID = 123456789
 
 
-class Message:
-    def __init__(self, date: datetime, raw_text: str):
-        self.date = date
-        self.raw_text = raw_text
-
-
 class Chat:
     def __init__(self, id, title):
         self.id = id
@@ -34,6 +28,13 @@ class User:
         self.last_name = last_name
         self.lang_code = 'en'
         self.phone = None
+
+
+class Message:
+    def __init__(self, date: datetime, raw_text: str, sender: User):
+        self.date = date
+        self.raw_text = raw_text
+        self.sender = sender
 
 
 class Event:

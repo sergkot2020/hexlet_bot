@@ -3,7 +3,7 @@ api_hash: hash_string
 bot_token: 123456:bot_token_string
 session: session_name
 
-sleep_time: 10
+sleep_time: 3600
 
 db_pool_size: 5
 

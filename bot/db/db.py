@@ -226,7 +226,7 @@ where chat_id = $2
         )
 
     async def get_users(self, chat_id):
-        await self.pool.fetch(
+        return await self.pool.fetch(
             '''\
 select
        u.id,
