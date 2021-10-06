@@ -4,8 +4,10 @@ run:
 lint:
 	poetry run flake8 bot
 
-install:
+build:
 	poetry build
+
+install:
 	pip3 install --user --force-reinstall dist/*.whl
 
 test:
