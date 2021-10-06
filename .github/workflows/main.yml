@@ -40,6 +40,9 @@ jobs:
     - name:  Test run
       run: |
         make test
+    - name:  coverage version
+      run: |
+        poetry run coverage --version
     - name:  Coverage report
       uses: paambaati/codeclimate-action@v2.7.5
       env:
