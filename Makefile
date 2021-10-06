@@ -8,7 +8,7 @@ build:
 	poetry build
 
 install:
-	pip3 install --user --force-reinstall dist/*.whl
+	poetry install
 
 test:
 	poetry run pytest -vv
