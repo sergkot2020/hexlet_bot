@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from telethon import TelegramClient, events  # type: ignore
 
-from bot.const import DAY_MAP, Notice
+from bot.const import Notice
 from bot.db.db import Db
 
 logger = logging.getLogger(__name__)

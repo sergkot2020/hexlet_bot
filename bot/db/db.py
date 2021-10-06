@@ -267,7 +267,7 @@ from "user"
             sunday=False,
     ):
         await self.pool.execute(
-            f'''\
+            '''\
 update chat_settings
 set monday = $1,
     tuesday = $2,
