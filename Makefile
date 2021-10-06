@@ -9,5 +9,7 @@ install:
 	pip3 install --user --force-reinstall dist/*.whl
 
 test:
-	poetry run mypy bot
-	poetry run pytest
+	poetry run pytest -vv
+
+coverage:
+	poetry run coverage xml

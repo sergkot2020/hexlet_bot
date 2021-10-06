@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import os
 import subprocess
 import time
+
 import pytest
-from bot.scripts.runner import run_app
+
 from bot.app import App
-import os
+from bot.scripts.runner import run_app
 from tests.monkey_patches import Bot
 
 TEST_FOLDER = 'tests'
@@ -58,32 +60,3 @@ async def app(created_app):
     yield app
     app.stop()
     await app.wait_stopped()
-
-# def after_scenario(context, scenario):
-#     conf: dict = context.ds_config
-#     dump_path = os.path.join(ROOT_DIR, 'features', 'fixtures', 'dump.sql')
-#     for name, settings in conf.items():
-#
-#         user = settings['user']
-#         db = settings['database']
-#         password = settings['password']
-#         schema = settings['schema']
-#
-#         fnull = open(os.devnull, 'w')
-#         subprocess.run(
-#             f'docker-compose exec -T db psql -U {user} -d {db} --command "DROP SCHEMA {schema} CASCADE"',
-#             shell=True,
-#             stdout=fnull,
-#             stderr=subprocess.STDOUT,
-#             env={'PGPASSWORD': password},
-#         )
-#
-#         subprocess.run(
-#             f"docker-compose exec -T db psql -U {user} -d {db} < {dump_path}",
-#             stdout=fnull,
-#             stderr=subprocess.STDOUT,
-#             shell=True,
-#             env={'PGPASSWORD': password},
-#         )
-#         fnull.close()
-#         return

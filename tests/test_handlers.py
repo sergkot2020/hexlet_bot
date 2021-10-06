@@ -3,7 +3,7 @@ from datetime import datetime
 from pytest import mark
 
 from bot.app import App, WELCOME_MSG
-from monkey_patches import Event, Message as Msg, BOT_ID, Chat, User, Bot
+from tests.monkey_patches import Event, Message as Msg, BOT_ID, Chat, User, Bot
 
 CHAT_ID = 111222
 NEW_CHAT_USER_ID = 999888
