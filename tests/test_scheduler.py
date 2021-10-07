@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pytest import mark
 
@@ -19,13 +19,13 @@ async def test_notice(app):
 
     kwargs = {day: True}
 
-    id_ = await app.db.get_chat_id(chat_id)
+    chat_pk = await app.db.get_chat_id(chat_id)
 
     bot: Bot = app.bot
-    await app.db.update_chat_settings(id_, **kwargs)
+    await app.db.update_chat_settings(chat_pk, **kwargs)
     await asyncio.sleep(2)
 
-    chat_id, message = bot.sent_messages[0]
+    chat_id, message = [(pk, msg) for (pk, msg) in bot.sent_messages if 'everyone' in msg][0]
     assert chat_id == chat_id
     assert message == 'Hi everyone, time to daily meeting 💪'
 
@@ -67,20 +67,20 @@ where telegram_id = $1
 ''',
         NEW_CHAT_USER_ID,
     )
-    id_ = row['id']
+    user_pk = row['id']
 
-    assert id_ in users
+    assert user_pk in users
 
 
 @mark.asyncio
 async def test_check_daily_report(app):
     now = datetime.now()
     yestrday = now.weekday() - 1
-    kwargs = {DAY_MAP[yestrday]: True}
     chat_id = list(app.chats)[0]
-    id_ = await app.db.get_chat_id(chat_id)
+    chat_pk = await app.db.get_chat_id(chat_id)
 
-    await app.db.update_chat_settings(id_, **kwargs)
+    kwargs = {DAY_MAP[yestrday]: True}
+    await app.db.update_chat_settings(chat_pk, **kwargs)
     await app.db.pool.execute(
         '''\
 update notice_log
@@ -88,9 +88,25 @@ set day = $1
 where chat_id = $2
 ''',
         yestrday,
-        id_,
+        chat_pk,
     )
+    await app.db.pool.execute(
+        '''\
+update meeting
+set start_ts = $2
+where chat_id = $1
+''',
+        chat_pk,
+        now - timedelta(days=1)
+    )
+    await app.db.pool.execute(
+        '''\
+delete from notice_log
+where notice_type = 'CENSURE'
+''',
+    )
+    # waiting daily report
     await asyncio.sleep(2)
     bot: Bot = app.bot
-    message = [m for (id_, m) in bot.sent_messages if 'you are missing' in m][0]
-    assert message == '@test_user_0, @test_user_1, @test_user_2, @test_user_3, @test_user_4, @new user, you are missing ours daily 😞'
+    message = [m for (chat_pk, m) in bot.sent_messages if 'you are missing' in m][-1]
+    assert message == '@test_user_0, @test_user_1, @test_user_2, @test_user_3, @test_user_4, you are missing ours daily 😞'

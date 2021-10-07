@@ -255,35 +255,69 @@ from "user"
 ''',
         )
 
+    async def switch_chat_settings_by_day(self, chat_pk, day):
+        await self.pool.execute(
+            f'''\
+update chat_settings
+set {day} = ch.new_day
+from (
+    select case
+            when {day}
+            then false
+            else true
+        end as new_day
+    from chat_settings
+    where chat_id = $1
+) ch
+where chat_id = $1
+''',
+            chat_pk,
+        )
+
     async def update_chat_settings(
             self,
-            chat_id,
-            monday=True,
-            tuesday=False,
-            wednesday=False,
-            thursday=False,
-            friday=False,
-            saturday=False,
-            sunday=False,
+            chat_pk,
+            **kwargs,
     ):
-        await self.pool.execute(
-            '''\
+        for day, state in kwargs.items():
+            await self.pool.execute(
+                f'''\
 update chat_settings
-set monday = $1,
-    tuesday = $2,
-    wednesday = $3,
-    thursday = $4,
-    friday = $5,
-    saturday = $6,
-    sunday = $7
-where chat_id = $8
+set {day} = $1
+where chat_id = $2
 ''',
-            monday,
-            tuesday,
-            wednesday,
-            thursday,
-            friday,
-            saturday,
-            sunday,
-            chat_id,
+                state,
+                chat_pk,
+            )
+
+    async def get_user_chats(self, telegram_id):
+        return await self.pool.fetch(
+            '''\
+select 
+       c.id, 
+       c.telegram_id,
+       c.title
+from chat c
+inner join chat_user_relation cs on c.id = cs.chat_id
+inner join "user" u on cs.user_id = u.id
+where u.telegram_id = $1
+''',
+            telegram_id
+        )
+
+    async def get_chat_setting_days(self, chat_pk):
+        return await self.pool.fetchrow(
+            '''\
+select 
+    monday,
+    tuesday,
+    wednesday,
+    thursday,
+    friday,
+    saturday,
+    sunday
+from chat_settings
+where chat_id = $1
+''',
+            chat_pk,
         )
