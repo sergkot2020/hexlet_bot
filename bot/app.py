@@ -266,65 +266,70 @@ class App:
 
         state = SELECT_CHAT
         chat_pk = None
-        async with self.bot.conversation(event.chat_id, timeout=3600) as conv:
-            msg = await conv.send_message('You can set schedule for chats:', buttons=chat_keyboard)
-            msg_id = msg.id
+        msg = None
+        try:
+            async with self.bot.conversation(event.chat_id, timeout=3600) as conv:
+                msg = await conv.send_message('You can set schedule for chats:', buttons=chat_keyboard)
+                msg_id = msg.id
 
-            while state != CANCEL:
-                if state == SELECT_CHAT:
-                    event = await conv.wait_event(choise_chat(user.id))
-                    chat_pk = get_tail(event.data)
+                while state != CANCEL:
+                    if state == SELECT_CHAT:
+                        event = await conv.wait_event(choise_chat(user.id))
+                        chat_pk = get_tail(event.data)
 
-                    if chat_pk == BUTTON_DONE:
-                        await event.answer('Saved new settings')
-                        await msg.delete()
-                        state = CANCEL
-                        continue
+                        if chat_pk == BUTTON_DONE:
+                            await event.answer('Saved new settings')
+                            await msg.delete()
+                            state = CANCEL
+                            continue
 
-                    await event.answer(f'Chat "{chat_map[chat_pk]}"')
+                        await event.answer(f'Chat "{chat_map[chat_pk]}"')
 
-                    logger.info(f'Set schedule for chat with pk={chat_pk}')
-                    day_keyboard = await self._generate_day_keybord(chat_pk)
-                    await self.bot.edit_message(
-                        event.chat_id, msg_id,
-                        'Choose days for meetings:',
-                        buttons=day_keyboard,
-                    )
-                    state = SELECT_DAYS
-                    continue
-
-                if state == SELECT_DAYS:
-                    event = await conv.wait_event(choise_day(user.id))
-                    day_number = get_tail(event.data)
-
-                    logger.info(f'Choose day={day_number}')
-
-                    if day_number == BUTTON_BACK:
+                        logger.info(f'Set schedule for chat with pk={chat_pk}')
+                        day_keyboard = await self._generate_day_keybord(chat_pk)
                         await self.bot.edit_message(
                             event.chat_id, msg_id,
-                            'You can set schedule for chats:',
-                            buttons=chat_keyboard,
+                            'Choose days for meetings:',
+                            buttons=day_keyboard,
                         )
-                        state = SELECT_CHAT
+                        state = SELECT_DAYS
                         continue
 
-                    await event.answer(f'{DAY_MAP[day_number]}')
-                    await self.db.switch_chat_settings_by_day(chat_pk, DAY_MAP[day_number])
-                    day_keyboard = await self._generate_day_keybord(chat_pk)
-                    await self.bot.edit_message(
-                        event.chat_id, msg_id,
-                        'Choose days for meetings:',
-                        buttons=day_keyboard,
-                    )
-                    state = SELECT_DAYS
-                    continue
+                    if state == SELECT_DAYS:
+                        event = await conv.wait_event(choise_day(user.id))
+                        day_number = get_tail(event.data)
 
-                if state == CANCEL:
-                    await self.bot.edit_message(
-                        event.chat_id, msg_id,
-                        'I saved new settings',
-                        buttons=chat_keyboard,
-                    )
+                        logger.info(f'Choose day={day_number}')
+
+                        if day_number == BUTTON_BACK:
+                            await self.bot.edit_message(
+                                event.chat_id, msg_id,
+                                'You can set schedule for chats:',
+                                buttons=chat_keyboard,
+                            )
+                            state = SELECT_CHAT
+                            continue
+
+                        await event.answer(f'{DAY_MAP[day_number]}')
+                        await self.db.switch_chat_settings_by_day(chat_pk, DAY_MAP[day_number])
+                        day_keyboard = await self._generate_day_keybord(chat_pk)
+                        await self.bot.edit_message(
+                            event.chat_id, msg_id,
+                            'Choose days for meetings:',
+                            buttons=day_keyboard,
+                        )
+                        state = SELECT_DAYS
+                        continue
+
+                    if state == CANCEL:
+                        await self.bot.edit_message(
+                            event.chat_id, msg_id,
+                            'I saved new settings',
+                            buttons=chat_keyboard,
+                        )
+        except asyncio.exceptions.TimeoutError:
+            if msg:
+                await msg.delete()
 
     async def check_new_user(self, event: events.NewMessage):
         if event.is_private:
