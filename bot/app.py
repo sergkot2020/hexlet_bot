@@ -321,12 +321,6 @@ class App:
                         state = SELECT_DAYS
                         continue
 
-                    if state == CANCEL:
-                        await self.bot.edit_message(
-                            event.chat_id, msg_id,
-                            'I saved new settings',
-                            buttons=chat_keyboard,
-                        )
         except asyncio.exceptions.TimeoutError:
             if msg:
                 await msg.delete()
@@ -421,7 +415,7 @@ class App:
 
                 criminals = []
                 for user_pk, _, first_name, last_name, username, _, _ in rowset:
-                    if user_pk not in good_users:  # noqa: E501
+                    if user_pk not in good_users:
                         name = username or ' '.join(filter(None, [first_name, last_name]))
                         criminals.append(f'@{name}')
 
